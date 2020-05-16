@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>聊天室</title>
+</head>
+<body>
+
+<form id="message-form">
+    <input type="text" name="message">
+    <input type="submit" value="发送" id="sub-btn">
+</form>
+
+<div id="content"></div>
+
+<script type="text/javascript" th:src="@{/js/jquery-3.4.1.js}"></script>
+<script type="text/javascript">
+
+    $(function () {
+        let socket;
+
+        let nickname;
+        do {
+            nickname = prompt("请输入你的昵称：");
+        } while (nickname === null || nickname === '')
+
+        if (typeof (WebSocket) == "undefined") {
+            console.log("您的浏览器不支持WebSocket");
+        } else {
+            console.log("您的浏览器支持WebSocket");
+            socket = new WebSocket("ws://localhost:8080/websocket");
+            //打开事件
+            socket.onopen = function () {
+                console.log("Socket 已打开");
+                socket.send(new Date().Format('yyyy-MM-dd hh:mm:ss') + "-" + nickname + "加入了聊天");
+            };
+            //获得消息事件
+            socket.onmessage = function (msg) {
+                console.log(msg.data);
+                $('#content').append($(`<div>${msg.data}</div>`));
+            };
+            //关闭事件
+            socket.onclose = function () {
+                console.log("Socket已关闭");
+            };
+            //发生了错误事件
+            socket.onerror = function () {
+                alert("Socket发生了错误");
+            }
+        }
+
+        $('#message-form').submit(function () {
+            let message = $('[name="message"]').val();
+            socket.send(new Date().Format('yyyy-MM-dd hh:mm:ss') + "-" + nickname + "：" + message);
+            $('[name="message"]').val('');
+            return false;
+        });
+
+    })
+
+    Date.prototype.Format = function (fmt) { //author: meizz
+        const o = {
+            "M+": this.getMonth() + 1, //月份
+            "d+": this.getDate(), //日
+            "h+": this.getHours(), //小时
+            "m+": this.getMinutes(), //分
+            "s+": this.getSeconds(), //秒
+            "q+": Math.floor((this.getMonth() + 3) / 3), //季度
+            "S": this.getMilliseconds() //毫秒
+        };
+        if (/(y+)/.test(fmt)) fmt = fmt.replace(RegExp.$1, (this.getFullYear() + "").substr(4 - RegExp.$1.length));
+        for (const k in o)
+            if (new RegExp("(" + k + ")").test(fmt)) fmt = fmt.replace(RegExp.$1, (RegExp.$1.length === 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
+        return fmt;
+    }
+
+
+</script>
+
+</body>
+</html>
