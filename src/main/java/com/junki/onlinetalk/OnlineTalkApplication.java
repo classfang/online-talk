@@ -8,6 +8,7 @@ public class OnlineTalkApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(OnlineTalkApplication.class, args);
+        System.out.println("hello world");
     }
 
 }
